@@ -31,5 +31,5 @@ A terminal‑style GUI quiz that tests your Python knowledge. Neon lights, 3 liv
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/yourusername/quiz.git
+   git clone https://github.com/jagenheie/python_quiz.git
    cd quiz
