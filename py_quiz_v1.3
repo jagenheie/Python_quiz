@@ -1,0 +1,237 @@
+import tkinter as tk
+from tkinter import messagebox
+import json
+import random
+import os
+
+# ===== CONFIG =====
+QUESTIONS_FILE = "questions.json"
+HIGH_SCORE_FILE = "high_score.json"
+QUESTIONS_PER_ROUND = 20
+MAX_LIVES = 3
+
+# ===== LOAD QUESTIONS =====
+def load_questions():
+    if not os.path.exists(QUESTIONS_FILE):
+        messagebox.showerror("Error", f"Questions file '{QUESTIONS_FILE}' not found.")
+        return []
+    with open(QUESTIONS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+# ===== HIGH SCORE =====
+def load_high_score():
+    if os.path.exists(HIGH_SCORE_FILE):
+        with open(HIGH_SCORE_FILE, "r") as f:
+            return json.load(f)
+    return {"level": 0, "total_correct": 0}
+
+def save_high_score(level, total_correct):
+    with open(HIGH_SCORE_FILE, "w") as f:
+        json.dump({"level": level, "total_correct": total_correct}, f)
+
+# ===== COLOR PALETTE =====
+BG = "#0b0b12"
+TEXT = "#ff00a0"
+ACCENT = "#00f0ff"
+CORRECT = "#00ff66"
+WRONG = "#ff0044"
+SCORE_COLOR = "#ffcc00"
+BUTTON_BG = "#1a0b1a"
+
+# ===== GUI SETUP =====
+root = tk.Tk()
+root.title("▌│█║▌║▌│ PYTHON_QUIZ.exe ║▌│█║▌║▌│")
+root.geometry("650x600")
+root.configure(bg=BG)
+
+# ===== GAME STATE =====
+all_questions = []
+current_pool = []
+current_index = 0
+score = 0
+lives = MAX_LIVES
+level = 0
+total_correct = 0
+used_questions = []
+
+# ===== HIGH SCORE LABEL =====
+high_score = load_high_score()
+
+# ===== WIDGETS =====
+score_label = tk.Label(
+    root,
+    text=f"Score: 0  |  Lives: ❤️❤️❤️  |  Level: 0",
+    font=("Courier New", 12, "bold"),
+    fg=SCORE_COLOR,
+    bg=BG
+)
+score_label.pack(pady=10)
+
+high_score_label = tk.Label(
+    root,
+    text=f"🏆 High Score: Level {high_score['level']}  |  Total Correct: {high_score['total_correct']}",
+    font=("Courier New", 10),
+    fg=ACCENT,
+    bg=BG
+)
+high_score_label.pack(pady=2)
+
+question_label = tk.Label(
+    root,
+    text="",
+    font=("Courier New", 14, "bold"),
+    fg=TEXT,
+    bg=BG,
+    wraplength=580,
+    justify="center"
+)
+question_label.pack(pady=25)
+
+feedback_label = tk.Label(
+    root,
+    text="",
+    font=("Courier New", 12, "bold"),
+    fg=ACCENT,
+    bg=BG
+)
+feedback_label.pack(pady=5)
+
+option_buttons = []
+for i in range(4):
+    btn = tk.Button(
+        root,
+        text="",
+        font=("Courier New", 12, "bold"),
+        bg=BUTTON_BG,
+        fg=ACCENT,
+        activebackground=ACCENT,
+        activeforeground=BG,
+        bd=0,
+        highlightthickness=0,
+        relief="flat",
+        width=50,
+        height=2,
+        command=lambda i=i: check_answer(i)
+    )
+    btn.pack(pady=6)
+    option_buttons.append(btn)
+
+# ===== FUNCTIONS =====
+def load_round():
+    global current_pool, current_index, lives, score, used_questions
+    available = [q for q in all_questions if q not in used_questions]
+    if len(available) < QUESTIONS_PER_ROUND:
+        feedback_label.config(text="🏁 No more questions! You've mastered them all!", fg=CORRECT)
+        for btn in option_buttons:
+            btn.pack_forget()
+        return
+
+    current_pool = random.sample(available, QUESTIONS_PER_ROUND)
+    current_index = 0
+    lives = MAX_LIVES
+    score = 0
+    show_question()
+
+def show_question():
+    if current_index >= len(current_pool):
+        level_up()
+        return
+
+    q = current_pool[current_index]
+    question_label.config(text=q["question"])
+    for i, opt in enumerate(q["options"]):
+        option_buttons[i].config(text=f"{chr(65+i)}) {opt}", state="normal", bg=BUTTON_BG, fg=ACCENT)
+    feedback_label.config(text="")
+    update_status()
+
+def check_answer(selected):
+    global score, lives, current_index, total_correct, level
+
+    q = current_pool[current_index]
+    correct = q["answer"]
+    selected_letter = ["A", "B", "C", "D"][selected]
+
+    if selected == correct:
+        score += 1
+        total_correct += 1
+        feedback_label.config(text="✅ CORRECT", fg=CORRECT)
+    else:
+        lives -= 1
+        correct_letter = ["A", "B", "C", "D"][correct]
+        feedback_label.config(text=f"❌ WRONG — Answer was {correct_letter}) {q['options'][correct]}", fg=WRONG)
+
+    update_status()
+
+    if lives == 0:
+        game_over()
+        return
+
+    current_index += 1
+    if current_index >= len(current_pool):
+        level_up()
+    else:
+        root.after(800, show_question)
+
+def level_up():
+    global level
+    level += 1
+    used_questions.extend(current_pool)
+    feedback_label.config(text=f"🔥 LEVEL {level} COMPLETE! Loading next round...", fg=ACCENT)
+    update_status()
+    root.after(1200, load_round)
+
+def game_over():
+    question_label.config(text="💀 GAME OVER")
+    for btn in option_buttons:
+        btn.pack_forget()
+    feedback_label.config(text=f"Final Score: {score} | Level: {level}", fg=WRONG)
+
+    if level > high_score["level"] or (level == high_score["level"] and total_correct > high_score["total_correct"]):
+        save_high_score(level, total_correct)
+        high_score_label.config(text=f"🏆 NEW HIGH SCORE! Level {level} | Total Correct: {total_correct}")
+
+    restart_btn = tk.Button(
+        root,
+        text="[ REBOOT ]",
+        font=("Courier New", 14, "bold"),
+        bg=BUTTON_BG,
+        fg=ACCENT,
+        activebackground=ACCENT,
+        activeforeground=BG,
+        bd=0,
+        highlightthickness=0,
+        relief="flat",
+        width=20,
+        height=2,
+        command=restart_quiz
+    )
+    restart_btn.pack(pady=20)
+
+def restart_quiz():
+    global used_questions, level, total_correct
+    for widget in root.winfo_children():
+        if isinstance(widget, tk.Button) and widget.cget("text") == "[ REBOOT ]":
+            widget.destroy()
+
+    used_questions = []
+    level = 0
+    total_correct = 0
+    for btn in option_buttons:
+        btn.pack(pady=6)
+    load_round()
+
+def update_status():
+    hearts = "❤️" * lives + "🖤" * (MAX_LIVES - lives)
+    score_label.config(text=f"Score: {score}  |  Lives: {hearts}  |  Level: {level}")
+
+# ===== LOAD & START =====
+all_questions = load_questions()
+if not all_questions:
+    root.destroy()
+else:
+    random.shuffle(all_questions)
+    used_questions = []
+    level = 0
+    total_correct = 0
+    load_round()
+    root.mainloop()
