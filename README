@@ -23,7 +23,7 @@ A terminal‑style GUI quiz that tests your Python knowledge. Neon lights, 3 liv
 
 ### Option 1 – Run the `.exe` (Windows, no Python required)
 
-1. Download `py_quiz_v1.3.exe` from the **[Releases](https://github.com/yourusername/quiz/releases)** page.
+1. Download `py_quiz_v1.3.exe` from the **[Releases](https://github.com/jagenheie/Python_quiz/releases)** page.
 2. Download `questions.json` from the repo and place it in the **same folder** as the `.exe`.
 3. Double‑click `py_quiz_v1.3.exe` – the quiz starts immediately.
 
