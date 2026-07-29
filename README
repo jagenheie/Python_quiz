@@ -1,0 +1,35 @@
+# 🐍 Python Quiz v1.3
+
+A terminal‑style GUI quiz that tests your Python knowledge. Neon lights, 3 lives, level progression, and a persistent high score.
+
+![Python](https://img.shields.io/badge/Python-3.x-blue?logo=python)
+![License](https://img.shields.io/badge/License-GPLv3-green)
+![Platform](https://img.shields.io/badge/Platform-Windows-blue)
+
+---
+
+## ✨ Features
+
+- ✅ 60+ Python questions (balanced by answer letter)
+- ✅ 20 questions per round, randomly selected
+- ❤️ 3 lives – miss a 4th and it's game over
+- 🔥 Level progression – complete 20 questions to advance
+- 🏆 Persistent high score (saves to `high_score.json`)
+- 🖥️ Standalone `.exe` available – no Python required
+
+---
+
+## 🚀 How to Run
+
+### Option 1 – Run the `.exe` (Windows, no Python required)
+
+1. Download `py_quiz_v1.3.exe` from the **[Releases](https://github.com/yourusername/quiz/releases)** page.
+2. Download `questions.json` from the repo and place it in the **same folder** as the `.exe`.
+3. Double‑click `py_quiz_v1.3.exe` – the quiz starts immediately.
+
+### Option 2 – Run from source (any OS with Python)
+
+1. Clone the repo:
+   ```bash
+   git clone https://github.com/yourusername/quiz.git
+   cd quiz
